@@ -24,6 +24,7 @@ import {
   Video,
   Clock,
   X,
+  Sparkles,
 } from "lucide-react";
 
 export const ReviewQueue = () => {
@@ -87,7 +88,6 @@ export const ReviewQueue = () => {
 
     const handleEventReviewed = (payload) => {
       console.log("Teacher Live Socket: event reviewed", payload);
-      // Update in-place in Redux (no loading spinner, no page reload!)
       dispatch(eventReviewed(payload));
     };
 
@@ -109,23 +109,23 @@ export const ReviewQueue = () => {
   };
 
   return (
-    <div className="space-y-6 relative">
+    <div className="space-y-6 relative select-none">
       {/* Floating Real-Time Proctor Alert Toasts for Teacher */}
       {liveAlerts.length > 0 && (
         <div className="fixed top-20 right-6 z-50 flex flex-col gap-3 max-w-md w-full pointer-events-none">
           {liveAlerts.map((alert) => (
             <div
               key={alert.id}
-              className="pointer-events-auto bg-slate-900/95 border-2 border-rose-500/80 backdrop-blur-xl rounded-2xl p-4 shadow-2xl shadow-rose-950/50 flex flex-col gap-2.5 animate-slide-in text-white"
+              className="pointer-events-auto bg-[#090d18]/95 border-2 border-rose-500/80 backdrop-blur-2xl rounded-3xl p-5 shadow-[0_0_35px_rgba(244,63,94,0.35)] flex flex-col gap-3 animate-slide-in text-white"
             >
               <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">{alert.activity.icon}</span>
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl">{alert.activity.icon}</span>
                   <div>
                     <span className="text-[10px] font-mono uppercase tracking-wider text-rose-400 font-bold block">
-                      🚨 Live Activity Alert
+                      🚨 Live Telemetry Incident Alert
                     </span>
-                    <h4 className="text-sm font-bold text-white">
+                    <h4 className="text-sm font-bold text-white font-heading">
                       {alert.studentName}{" "}
                       <span className="text-xs font-normal text-slate-400 font-mono">
                         ({alert.studentId || "Student"})
@@ -135,14 +135,14 @@ export const ReviewQueue = () => {
                 </div>
                 <button
                   onClick={() => dispatch(removeLiveAlert(alert.id))}
-                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                  className="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
-              <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 space-y-1">
-                <div className="text-xs font-semibold text-rose-300 flex items-center gap-1.5">
+              <div className="bg-slate-900/80 p-3 rounded-2xl border border-white/10 space-y-1">
+                <div className="text-xs font-semibold text-rose-300 flex items-center gap-1.5 font-mono">
                   <span>Activity:</span>
                   <span>{alert.activity.name}</span>
                 </div>
@@ -152,24 +152,24 @@ export const ReviewQueue = () => {
               </div>
 
               <div className="flex items-center justify-between gap-2 pt-1">
-                <span className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
-                  <Clock className="h-3 w-3" /> {alert.time}
+                <span className="text-[10px] text-slate-400 font-mono flex items-center gap-1">
+                  <Clock className="h-3 w-3 text-purple-400" /> {alert.time}
                 </span>
 
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleQuickReview(alert.id, "false_alarm")}
-                    className="px-3 py-1.5 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-700/80 text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                    className="px-3 py-1.5 rounded-full bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-all cursor-pointer flex items-center gap-1 shadow-sm active:scale-95"
                   >
                     <CheckCircle className="h-3.5 w-3.5" />
-                    False Alarm
+                    <span>False Alarm</span>
                   </button>
                   <button
                     onClick={() => handleQuickReview(alert.id, "valid")}
-                    className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-600/30 transition-all cursor-pointer flex items-center gap-1"
+                    className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white text-xs font-bold shadow-md shadow-rose-600/30 transition-all cursor-pointer flex items-center gap-1 active:scale-95"
                   >
                     <AlertOctagon className="h-3.5 w-3.5" />
-                    Valid (Auto-Submit)
+                    <span>Confirm Valid</span>
                   </button>
                 </div>
               </div>
@@ -181,27 +181,30 @@ export const ReviewQueue = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
-            <Video className="h-6 w-6 text-indigo-400" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-mono font-medium mb-2 shadow-[0_0_12px_rgba(168,85,247,0.15)]">
+            <Video className="w-3.5 h-3.5 text-purple-400" />
+            <span>Human-in-the-Loop Review</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-heading">
             Snapshot Evidence & Student Activity Review
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Real-time proctoring feed: View student violations with specific reasons (Tab Switch, Mobile Phone, Multiple Faces) and verify false alarms.
+          <p className="text-xs sm:text-sm text-slate-400 mt-1 font-sans">
+            Real-time proctoring feed: View student violations with specific reasons and audit flagged frames
           </p>
         </div>
 
         <button
           onClick={() => dispatch(fetchReviews(filter))}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white text-xs font-medium transition-colors cursor-pointer self-start sm:self-auto"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-900/80 hover:bg-slate-800 border border-white/10 hover:border-purple-400/40 text-slate-300 hover:text-white text-xs font-mono font-medium transition-all cursor-pointer self-start sm:self-auto active:scale-95 shadow-md"
         >
-          <RefreshCw className="h-3.5 w-3.5" />
-          Refresh Queue
+          <RefreshCw className="h-3.5 w-3.5 text-purple-400" />
+          <span>Refresh Queue</span>
         </button>
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-3 overflow-x-auto">
-        <Filter className="h-4 w-4 text-slate-500 mr-1 shrink-0" />
+      <div className="flex items-center gap-2 border-b border-white/[0.08] pb-3 overflow-x-auto">
+        <Filter className="h-4 w-4 text-purple-400 mr-1 shrink-0" />
         {[
           { id: "all", label: "All Telemetry Events" },
           { id: "pending", label: "Pending Review" },
@@ -211,10 +214,10 @@ export const ReviewQueue = () => {
           <button
             key={tab.id}
             onClick={() => dispatch(setFilter(tab.id))}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-medium whitespace-nowrap transition-all cursor-pointer ${
               filter === tab.id
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
+                ? "bg-gradient-to-r from-purple-500 via-violet-500 to-purple-600 text-white font-bold shadow-[0_0_15px_rgba(168,85,247,0.35)]"
+                : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.05]"
             }`}
           >
             {tab.label}
@@ -224,24 +227,27 @@ export const ReviewQueue = () => {
 
       {/* Grid of Evidence Cards */}
       {loading ? (
-        <div className="flex items-center justify-center p-12 text-slate-400 gap-3">
-          <RefreshCw className="h-5 w-5 animate-spin text-indigo-400" />
-          Loading evidence records...
+        <div className="flex items-center justify-center p-12 text-slate-400 gap-3 rounded-3xl bg-slate-950/60 border border-white/10 backdrop-blur-xl">
+          <RefreshCw className="h-5 w-5 animate-spin text-purple-400" />
+          <span className="font-mono text-xs">Loading incident evidence frames...</span>
         </div>
       ) : events.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {events.map((ev) => {
             const act = getActivityDetails(ev.type);
 
             return (
               <div
                 key={ev._id}
-                className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-lg flex flex-col group hover:border-indigo-500/40 transition-all"
+                className="bg-slate-950/70 backdrop-blur-xl border border-white/10 hover:border-purple-500/40 rounded-3xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.6)] hover:shadow-[0_0_30px_rgba(168,85,247,0.18)] flex flex-col group transition-all relative"
               >
+                {/* Subtle top laser glow line */}
+                <div className="absolute top-0 inset-x-6 h-[1.5px] bg-gradient-to-r from-transparent via-purple-400/40 to-transparent pointer-events-none" />
+
                 {/* Snapshot Frame */}
                 <div
                   onClick={() => dispatch(setSelectedEvent(ev))}
-                  className="relative aspect-video bg-slate-950 border-b border-slate-800 cursor-pointer overflow-hidden flex items-center justify-center"
+                  className="relative aspect-video bg-slate-950 border-b border-white/[0.08] cursor-pointer overflow-hidden flex items-center justify-center"
                 >
                   {ev.evidenceUrl ? (
                     <img
@@ -257,37 +263,37 @@ export const ReviewQueue = () => {
                     />
                   ) : (
                     /* High-tech telemetry card for events like tab-switch */
-                    <div className="w-full h-full bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/30 flex flex-col items-center justify-center p-4 text-center relative">
-                      <div className="h-11 w-11 rounded-xl bg-indigo-950/80 border border-indigo-700/50 flex items-center justify-center text-2xl shadow-inner mb-2">
+                    <div className="w-full h-full bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/20 flex flex-col items-center justify-center p-4 text-center relative">
+                      <div className="h-11 w-11 rounded-2xl bg-purple-950/80 border border-purple-500/40 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(168,85,247,0.2)] mb-2">
                         {act.icon}
                       </div>
-                      <p className="text-xs font-semibold text-indigo-200">
+                      <p className="text-xs font-bold text-purple-200 font-heading">
                         {act.name}
                       </p>
                       <p className="text-[10px] text-slate-400 mt-0.5 max-w-[210px] line-clamp-1">
                         {act.category} • Client Telemetry Event
                       </p>
-                      <div className="mt-2 px-2.5 py-0.5 rounded text-[10px] font-mono bg-slate-950/80 text-indigo-300 border border-slate-800">
-                        Deterministic browser trigger
+                      <div className="mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-purple-950/80 text-purple-300 border border-purple-500/30">
+                        Browser Telemetry Trigger
                       </div>
                     </div>
                   )}
 
                   {/* Activity Name Tag */}
-                  <div className="absolute top-2.5 left-2.5 bg-slate-950/90 backdrop-blur-md px-2.5 py-1 rounded-md text-[11px] font-medium text-slate-200 border border-slate-800 flex items-center gap-1.5 shadow-sm">
+                  <div className="absolute top-2.5 left-2.5 bg-slate-950/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[11px] font-medium text-slate-200 border border-white/10 flex items-center gap-1.5 shadow-md">
                     <span>{act.icon}</span>
-                    <span className="font-semibold text-indigo-300">{act.shortName}</span>
+                    <span className="font-semibold text-purple-300 font-mono">{act.shortName}</span>
                   </div>
 
                   {/* Review Decision Overlay Badge */}
                   <div className="absolute top-2.5 right-2.5">
                     <span
-                      className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase shadow-sm ${
+                      className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-mono font-bold uppercase shadow-sm ${
                         ev.reviewDecision === "valid"
-                          ? "bg-rose-950/90 text-rose-300 border border-rose-700"
+                          ? "bg-rose-950/90 text-rose-300 border border-rose-500/40"
                           : ev.reviewDecision === "false_alarm"
-                          ? "bg-emerald-950/90 text-emerald-300 border border-emerald-700"
-                          : "bg-amber-950/90 text-amber-300 border border-amber-700"
+                          ? "bg-emerald-950/90 text-emerald-300 border border-emerald-500/40"
+                          : "bg-amber-950/90 text-amber-300 border border-amber-500/40"
                       }`}
                     >
                       {ev.reviewDecision || "pending"}
@@ -296,13 +302,13 @@ export const ReviewQueue = () => {
                 </div>
 
                 {/* Card Body */}
-                <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                   <div>
                     <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-semibold text-white">
+                      <h4 className="text-sm font-bold text-white font-heading">
                         {ev.studentId?.name || "Student"}
                       </h4>
-                      <span className="text-[11px] font-mono text-slate-400">
+                      <span className="text-[11px] font-mono text-purple-300">
                         {ev.studentId?.studentId || "No ID"}
                       </span>
                     </div>
@@ -312,43 +318,43 @@ export const ReviewQueue = () => {
                   </div>
 
                   {/* Explicit Student Activity & Reason Box */}
-                  <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
-                    <div className="flex items-center justify-between text-xs font-semibold text-slate-200">
+                  <div className="p-3.5 rounded-2xl bg-slate-900/70 border border-white/10 space-y-1.5">
+                    <div className="flex items-center justify-between text-xs font-semibold text-slate-200 font-mono">
                       <span className="flex items-center gap-1.5">
                         <span>{act.icon}</span>
-                        <span className="text-indigo-300">{act.name}</span>
+                        <span className="text-purple-300 font-heading">{act.name}</span>
                       </span>
-                      <span className="text-[10px] font-mono text-slate-500 uppercase">
+                      <span className="text-[10px] font-mono text-slate-400 uppercase">
                         {ev.severity || "high"}
                       </span>
                     </div>
 
-                    <p className="text-[11px] text-slate-300 leading-relaxed">
+                    <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
                       <strong className="text-slate-400">Reason:</strong> {act.reason}
                     </p>
 
                     {/* Verdict status explanation */}
                     {ev.reviewDecision === "false_alarm" ? (
-                      <div className="pt-1 border-t border-slate-900 flex items-center gap-1.5 text-[10px] text-emerald-400 font-medium">
+                      <div className="pt-1.5 border-t border-white/[0.08] flex items-center gap-1.5 text-[10px] text-emerald-400 font-mono">
                         <CheckCircle className="h-3.5 w-3.5 shrink-0" />
                         <span>False Alarm: Alert deducted from student warning tally</span>
                       </div>
                     ) : ev.reviewDecision === "valid" ? (
-                      <div className="pt-1 border-t border-slate-900 flex items-center gap-1.5 text-[10px] text-rose-400 font-medium">
+                      <div className="pt-1.5 border-t border-white/[0.08] flex items-center gap-1.5 text-[10px] text-rose-400 font-mono">
                         <AlertOctagon className="h-3.5 w-3.5 shrink-0" />
                         <span>Confirmed Incident: Student exam auto-submitted</span>
                       </div>
                     ) : (
-                      <div className="pt-1 border-t border-slate-900 flex items-center gap-1.5 text-[10px] text-amber-400 font-medium">
+                      <div className="pt-1.5 border-t border-white/[0.08] flex items-center gap-1.5 text-[10px] text-amber-400 font-mono">
                         <Clock className="h-3.5 w-3.5 shrink-0" />
-                        <span>Awaiting Review: Warning currently penalizes student</span>
+                        <span>Awaiting Review: Warning active in telemetry log</span>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-800/80">
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono pt-1 border-t border-white/[0.08]">
                     <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
+                      <Clock className="h-3 w-3 text-purple-400" />
                       {new Date(ev.occurredAt).toLocaleTimeString()}
                     </span>
                     <span>Confidence: {Math.round((ev.confidence || 1) * 100)}%</span>
@@ -358,26 +364,26 @@ export const ReviewQueue = () => {
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <button
                       onClick={() => handleQuickReview(ev._id, "false_alarm")}
-                      className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                      className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer active:scale-95 ${
                         ev.reviewDecision === "false_alarm"
-                          ? "bg-emerald-950 text-emerald-300 border-emerald-700"
-                          : "bg-slate-950 text-slate-300 border-slate-800 hover:border-emerald-700 hover:text-emerald-300"
+                          ? "bg-emerald-950/90 text-emerald-300 border-emerald-500/50"
+                          : "bg-slate-900/80 text-slate-300 border-white/10 hover:border-emerald-500/40 hover:text-emerald-300"
                       }`}
                     >
                       <CheckCircle className="h-3.5 w-3.5 text-emerald-400" />
-                      False Alarm
+                      <span>False Alarm</span>
                     </button>
 
                     <button
                       onClick={() => handleQuickReview(ev._id, "valid")}
-                      className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                      className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer active:scale-95 ${
                         ev.reviewDecision === "valid"
-                          ? "bg-rose-950 text-rose-300 border-rose-700"
-                          : "bg-slate-950 text-slate-300 border-slate-800 hover:border-rose-700 hover:text-rose-300"
+                          ? "bg-rose-950/90 text-rose-300 border-rose-500/50"
+                          : "bg-slate-900/80 text-slate-300 border-white/10 hover:border-rose-500/40 hover:text-rose-300"
                       }`}
                     >
                       <AlertOctagon className="h-3.5 w-3.5 text-rose-400" />
-                      Valid Incident
+                      <span>Valid Incident</span>
                     </button>
                   </div>
                 </div>
@@ -386,12 +392,13 @@ export const ReviewQueue = () => {
           })}
         </div>
       ) : (
-        <div className="p-12 text-center rounded-2xl bg-slate-900/40 border border-slate-800 text-slate-400 space-y-2">
-          <CheckCircle className="h-10 w-10 text-emerald-400 mx-auto" />
-          <h3 className="text-base font-semibold text-white">Review Queue Clear</h3>
-          <p className="text-xs text-slate-500 max-w-md mx-auto">
-            No events match the selected filter. Students taking exams will stream
-            flagged frames here in real-time.
+        <div className="p-12 text-center rounded-3xl bg-slate-950/60 backdrop-blur-xl border border-dashed border-white/10 text-slate-400 space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-950/60 border border-emerald-500/40 flex items-center justify-center mx-auto text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+            <CheckCircle className="h-6 w-6" />
+          </div>
+          <h3 className="text-base font-bold text-white font-heading">Review Queue All Clear</h3>
+          <p className="text-xs text-slate-400 max-w-md mx-auto">
+            No incidents match the selected filter. Students taking exams will stream flagged frames here in real-time.
           </p>
         </div>
       )}
@@ -409,3 +416,5 @@ export const ReviewQueue = () => {
     </div>
   );
 };
+
+export default ReviewQueue;

@@ -1,7 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext.jsx";
-import { Navbar } from "./components/Navbar.jsx";
 import { Sidebar } from "./components/Sidebar.jsx";
 
 // Pages
@@ -50,9 +49,15 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 // Layout Wrapper
 const DashboardLayout = ({ children }) => {
   return (
-    <div className="flex flex-1 min-h-screen items-start">
+    <div className="flex flex-col lg:flex-row flex-1 min-h-screen relative bg-[#080c14]">
+      {/* Background Cyber Ambient Lights */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-10rem] left-1/3 w-[45rem] h-[30rem] bg-gradient-to-b from-purple-500/10 via-violet-500/5 to-transparent blur-[140px] rounded-full" />
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-purple-600/10 blur-[150px] rounded-full" />
+      </div>
+
       <Sidebar />
-      <main className="flex-1 p-4 sm:p-8 max-w-7xl mx-auto w-full min-w-0">
+      <main className="flex-1 lg:ml-64 p-4 sm:p-8 max-w-7xl mx-auto w-full min-w-0 relative z-10">
         {children}
       </main>
     </div>
@@ -63,13 +68,14 @@ export function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <div className="min-h-screen flex flex-col bg-[#0b0f19] text-slate-100">
-          <Navbar />
+        <div className="min-h-screen flex flex-col bg-[#080c14] text-slate-100">
           <Routes>
             {/* Public */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/student" element={<Navigate to="/student/dashboard" replace />} />
+            <Route path="/teacher" element={<Navigate to="/teacher/dashboard" replace />} />
 
             {/* Teacher Protected */}
             <Route

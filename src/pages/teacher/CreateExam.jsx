@@ -12,6 +12,7 @@ import {
   FileSpreadsheet,
   Download,
   Upload,
+  Sparkles,
 } from "lucide-react";
 
 export const CreateExam = () => {
@@ -97,7 +98,6 @@ export const CreateExam = () => {
         // Skip header line 0
         for (let i = 1; i < lines.length; i++) {
           const line = lines[i];
-          // Regex to parse comma-separated values respecting double quotes
           const matches = line.match(/(?:\"([^\"]*(?:\"\"[^\"]*)*)\")|([^,]+)/g);
           if (!matches || matches.length < 6) continue;
 
@@ -117,7 +117,7 @@ export const CreateExam = () => {
             parsedQuestions.push({
               questionText: qText,
               options: [opt1, opt2, opt3, opt4].filter((o) => o.length > 0),
-              correctOptionIndex: Math.max(0, Math.min(3, correctNum - 1)), // 1-indexed to 0-indexed
+              correctOptionIndex: Math.max(0, Math.min(3, correctNum - 1)),
               marks: marks > 0 ? marks : 1,
             });
           }
@@ -136,7 +136,7 @@ export const CreateExam = () => {
       }
     };
     reader.readAsText(file);
-    e.target.value = ""; // reset file input
+    e.target.value = "";
   };
 
   const addQuestion = () => {
@@ -217,47 +217,60 @@ export const CreateExam = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto pb-12">
-      {/* Header */}
+    <div className="space-y-6 max-w-4xl mx-auto pb-12 select-none">
+      {/* Top Header Actions */}
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate("/teacher/exams")}
-          className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer"
+          className="flex items-center gap-2 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer group"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Exams
+          <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+          <span>Back to Examinations</span>
         </button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             disabled={loading}
             onClick={() => handleSubmit(false)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-white/10 hover:border-purple-400/40 text-slate-300 hover:text-white text-xs font-semibold cursor-pointer transition-all active:scale-95"
           >
-            <Save className="h-4 w-4" />
-            Save as Draft
+            <Save className="h-3.5 w-3.5 text-purple-400" />
+            <span>Save as Draft</span>
           </button>
           <button
             type="button"
             disabled={loading}
             onClick={() => handleSubmit(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/20 cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-purple-500 via-violet-500 to-purple-600 hover:from-purple-400 hover:to-violet-400 text-white text-xs font-bold shadow-[0_0_20px_rgba(168,85,247,0.35)] hover:shadow-[0_0_25px_rgba(168,85,247,0.55)] cursor-pointer transition-all active:scale-95"
           >
             <CheckCircle className="h-4 w-4" />
-            Save & Publish
+            <span>Save & Publish</span>
           </button>
         </div>
       </div>
 
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6">
-        <h2 className="text-xl font-bold text-white tracking-tight">
-          Exam Details & Configuration
-        </h2>
+      {/* Main Form Container Card */}
+      <div className="bg-slate-950/70 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 shadow-[0_10px_30px_rgba(0,0,0,0.6)] relative overflow-hidden">
+        {/* Top laser accent line */}
+        <div className="absolute top-0 inset-x-8 h-[1.5px] bg-gradient-to-r from-transparent via-purple-400/40 to-transparent pointer-events-none" />
+
+        <div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-mono font-medium mb-2 shadow-[0_0_12px_rgba(168,85,247,0.15)]">
+            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+            <span>Curriculum Creator</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight font-heading">
+            Exam Details & Proctoring Configuration
+          </h2>
+          <p className="text-xs text-slate-400 mt-1">
+            Configure examination parameters, questions, and telemetry trigger rules.
+          </p>
+        </div>
 
         {/* Basic fields */}
         <div className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-300">
+          <div className="space-y-1.5">
+            <label className="text-xs font-mono font-medium text-slate-300">
               Exam Title *
             </label>
             <input
@@ -265,14 +278,14 @@ export const CreateExam = () => {
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. CS401: Cloud Computing & Systems Midterm"
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+              placeholder="e.g. CS401: Distributed Systems & Cloud Architecture Midterm"
+              className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400/30 transition-all"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-300">
+            <div className="space-y-1.5">
+              <label className="text-xs font-mono font-medium text-slate-300">
                 Duration (Minutes) *
               </label>
               <input
@@ -280,12 +293,12 @@ export const CreateExam = () => {
                 min={1}
                 value={durationMinutes}
                 onChange={(e) => setDurationMinutes(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400/30 font-mono"
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-300">
+            <div className="space-y-1.5">
+              <label className="text-xs font-mono font-medium text-slate-300">
                 Max Allowed Attempts
               </label>
               <input
@@ -293,116 +306,116 @@ export const CreateExam = () => {
                 min={1}
                 value={maxAttempts}
                 onChange={(e) => setMaxAttempts(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-900/80 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400/30 font-mono"
               />
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-300">
-              Description & Syllabus
+          <div className="space-y-1.5">
+            <label className="text-xs font-mono font-medium text-slate-300">
+              Description & Syllabus Coverage
             </label>
             <textarea
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description of the exam coverage..."
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+              placeholder="Brief description of the exam coverage, chapters, and grade weightage..."
+              className="w-full bg-slate-900/80 border border-white/10 rounded-xl p-3 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400/30 transition-all leading-relaxed"
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-slate-300">
-              Student Instructions
+          <div className="space-y-1.5">
+            <label className="text-xs font-mono font-medium text-slate-300">
+              Student Instructions & Conduct Guidelines
             </label>
             <textarea
               rows={3}
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-900/80 border border-white/10 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400/30 font-mono text-xs leading-relaxed"
             />
           </div>
         </div>
 
         {/* Proctoring Settings Checklist */}
-        <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-semibold text-indigo-300">
-            <ShieldAlert className="h-4 w-4" />
-            AI Proctoring Telemetry Options
+        <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-white/10 space-y-3">
+          <div className="flex items-center gap-2 text-xs font-bold text-purple-300 font-heading">
+            <ShieldAlert className="h-4 w-4 text-purple-400" />
+            <span>AI Proctoring Telemetry Options</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
+            <label className="flex items-center gap-2.5 text-slate-300 cursor-pointer p-2 rounded-xl bg-slate-950/60 border border-white/5 hover:border-purple-500/30 transition-colors">
               <input
                 type="checkbox"
                 checked={settings.faceMonitoring}
                 onChange={(e) =>
                   setSettings({ ...settings, faceMonitoring: e.target.checked })
                 }
-                className="rounded border-slate-700 text-indigo-600 focus:ring-0"
+                className="rounded border-slate-700 text-purple-600 focus:ring-0 accent-purple-500 cursor-pointer"
               />
-              Face Centering
+              <span className="font-medium">Face Centering</span>
             </label>
-            <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
+            <label className="flex items-center gap-2.5 text-slate-300 cursor-pointer p-2 rounded-xl bg-slate-950/60 border border-white/5 hover:border-purple-500/30 transition-colors">
               <input
                 type="checkbox"
                 checked={settings.phoneDetection}
                 onChange={(e) =>
                   setSettings({ ...settings, phoneDetection: e.target.checked })
                 }
-                className="rounded border-slate-700 text-indigo-600 focus:ring-0"
+                className="rounded border-slate-700 text-purple-600 focus:ring-0 accent-purple-500 cursor-pointer"
               />
-              Phone Detection
+              <span className="font-medium">Phone Detection</span>
             </label>
-            <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
+            <label className="flex items-center gap-2.5 text-slate-300 cursor-pointer p-2 rounded-xl bg-slate-950/60 border border-white/5 hover:border-purple-500/30 transition-colors">
               <input
                 type="checkbox"
                 checked={settings.tabMonitoring}
                 onChange={(e) =>
                   setSettings({ ...settings, tabMonitoring: e.target.checked })
                 }
-                className="rounded border-slate-700 text-indigo-600 focus:ring-0"
+                className="rounded border-slate-700 text-purple-600 focus:ring-0 accent-purple-500 cursor-pointer"
               />
-              Tab Switches
+              <span className="font-medium">Tab Switches</span>
             </label>
-            <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
+            <label className="flex items-center gap-2.5 text-slate-300 cursor-pointer p-2 rounded-xl bg-slate-950/60 border border-white/5 hover:border-purple-500/30 transition-colors">
               <input
                 type="checkbox"
                 checked={settings.captureSnapshots}
                 onChange={(e) =>
                   setSettings({ ...settings, captureSnapshots: e.target.checked })
                 }
-                className="rounded border-slate-700 text-indigo-600 focus:ring-0"
+                className="rounded border-slate-700 text-purple-600 focus:ring-0 accent-purple-500 cursor-pointer"
               />
-              Save Incident Snapshots
+              <span className="font-medium">Incident Snapshots</span>
             </label>
           </div>
         </div>
 
         {/* Questions Section */}
-        <div className="pt-4 border-t border-slate-800 space-y-6">
+        <div className="pt-4 border-t border-white/[0.08] space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h3 className="text-base font-bold text-white">
-                Exam Questions ({questions.length})
+              <h3 className="text-base font-bold text-white font-heading">
+                Examination Questions ({questions.length})
               </h3>
               <p className="text-xs text-slate-400">
-                Add manually or upload via bulk CSV spreadsheet
+                Add MCQs manually or upload in bulk using a CSV spreadsheet
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={downloadSampleCsv}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-medium cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-white/10 text-slate-300 text-xs font-medium cursor-pointer transition-colors"
                 title="Download CSV Template"
               >
-                <Download className="h-3.5 w-3.5 text-indigo-400" />
-                CSV Template
+                <Download className="h-3.5 w-3.5 text-purple-400" />
+                <span>CSV Template</span>
               </button>
 
-              <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 text-emerald-300 text-xs font-semibold cursor-pointer">
+              <label className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 text-xs font-semibold cursor-pointer shadow-sm transition-all">
                 <Upload className="h-3.5 w-3.5" />
-                Upload CSV
+                <span>Upload CSV</span>
                 <input
                   type="file"
                   accept=".csv"
@@ -414,32 +427,32 @@ export const CreateExam = () => {
               <button
                 type="button"
                 onClick={addQuestion}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/60 text-indigo-300 text-xs font-semibold transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-purple-950/80 hover:bg-purple-900 border border-purple-500/40 text-purple-200 text-xs font-semibold shadow-sm transition-all cursor-pointer"
               >
-                <Plus className="h-4 w-4" />
-                Add Question
+                <Plus className="h-3.5 w-3.5 text-purple-400" />
+                <span>Add Question</span>
               </button>
             </div>
           </div>
 
           {csvNotice && (
-            <div className="p-3.5 rounded-xl bg-emerald-950/80 border border-emerald-700 text-emerald-200 text-xs font-medium animate-fade-in flex items-center gap-2">
+            <div className="p-3.5 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-200 text-xs font-medium flex items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
               <FileSpreadsheet className="h-4 w-4 text-emerald-400" />
-              {csvNotice}
+              <span>{csvNotice}</span>
             </div>
           )}
 
           {questions.map((q, qIndex) => (
             <div
               key={qIndex}
-              className="p-5 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-4"
+              className="p-5 rounded-2xl bg-slate-900/60 border border-white/10 hover:border-purple-500/30 transition-all space-y-4"
             >
               <div className="flex items-center justify-between gap-3">
-                <span className="text-xs font-bold text-indigo-400">
+                <span className="text-xs font-mono font-bold text-purple-300 bg-purple-950/60 border border-purple-500/30 px-2.5 py-0.5 rounded-full">
                   Question #{qIndex + 1}
                 </span>
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1 text-xs text-slate-400">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-400 font-mono">
                     <span>Marks:</span>
                     <input
                       type="number"
@@ -448,13 +461,14 @@ export const CreateExam = () => {
                       onChange={(e) =>
                         updateQuestion(qIndex, "marks", Number(e.target.value))
                       }
-                      className="w-12 bg-slate-900 border border-slate-800 rounded px-1.5 py-0.5 text-center text-white"
+                      className="w-12 bg-slate-950 border border-white/10 rounded-lg px-2 py-0.5 text-center text-white font-mono focus:border-purple-400 focus:outline-none"
                     />
                   </div>
                   <button
                     type="button"
                     onClick={() => removeQuestion(qIndex)}
-                    className="p-1 rounded text-slate-500 hover:text-rose-400 transition-colors"
+                    className="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 transition-colors cursor-pointer"
+                    title="Delete Question"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -469,22 +483,22 @@ export const CreateExam = () => {
                   updateQuestion(qIndex, "questionText", e.target.value)
                 }
                 placeholder="Enter the question text here..."
-                className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-slate-950/80 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-purple-400 transition-all"
               />
 
               {/* Options */}
               <div className="space-y-2">
-                <span className="text-[11px] font-medium text-slate-400 block">
-                  Options (Select radio button for the correct answer key):
+                <span className="text-[11px] font-mono text-slate-400 block">
+                  Options (Select radio for the correct answer key):
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {q.options.map((opt, optIndex) => (
                     <div
                       key={optIndex}
-                      className={`flex items-center gap-2 p-2 rounded-xl border transition-all ${
+                      className={`flex items-center gap-2.5 p-2.5 rounded-xl border transition-all ${
                         q.correctOptionIndex === optIndex
-                          ? "bg-emerald-950/30 border-emerald-700/60"
-                          : "bg-slate-900 border-slate-800"
+                          ? "bg-emerald-950/40 border-emerald-500/50 shadow-[0_0_12px_rgba(16,185,129,0.15)]"
+                          : "bg-slate-950/60 border-white/10"
                       }`}
                     >
                       <input
@@ -494,7 +508,7 @@ export const CreateExam = () => {
                         onChange={() =>
                           updateQuestion(qIndex, "correctOptionIndex", optIndex)
                         }
-                        className="text-emerald-500 focus:ring-0 cursor-pointer"
+                        className="text-emerald-500 accent-emerald-500 focus:ring-0 cursor-pointer"
                       />
                       <input
                         type="text"
@@ -503,7 +517,7 @@ export const CreateExam = () => {
                           updateOption(qIndex, optIndex, e.target.value)
                         }
                         placeholder={`Option ${optIndex + 1}`}
-                        className="flex-1 bg-transparent border-0 text-xs text-slate-200 focus:outline-none"
+                        className="flex-1 bg-transparent border-0 text-xs text-slate-200 focus:outline-none placeholder:text-slate-600"
                       />
                     </div>
                   ))}
@@ -516,3 +530,5 @@ export const CreateExam = () => {
     </div>
   );
 };
+
+export default CreateExam;

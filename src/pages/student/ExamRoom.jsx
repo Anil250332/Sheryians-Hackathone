@@ -465,24 +465,24 @@ export const ExamRoom = () => {
   return (
     <div className="flex-1 flex flex-col pb-8 select-none">
       {/* Top Examination HUD Bar */}
-      <div className="bg-slate-900 border-b border-slate-800 px-4 sm:px-6 py-3 flex items-center justify-between gap-4 sticky top-16 z-30 shadow-md">
+      <div className="bg-[#060911]/95 border-b border-white/10 backdrop-blur-2xl px-4 sm:px-6 py-3 flex items-center justify-between gap-4 sticky top-0 z-30 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
         <div>
-          <h2 className="text-sm sm:text-base font-bold text-white truncate max-w-xs sm:max-w-md">
+          <h2 className="text-sm sm:text-base font-bold text-white truncate max-w-xs sm:max-w-md font-heading">
             {exam.title}
           </h2>
-          <span className="text-[11px] text-slate-400">
+          <span className="text-[11px] text-slate-400 font-mono">
             {answeredCount} of {totalQuestions} answered
           </span>
         </div>
 
         {/* Violations Counter HUD Badge */}
         <div
-          className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold ${
+          className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-mono font-semibold ${
             violationCount === 0
-              ? "bg-emerald-950/60 text-emerald-300 border-emerald-800"
+              ? "bg-emerald-950/80 text-emerald-300 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
               : violationCount === 1
-              ? "bg-amber-950/60 text-amber-300 border-amber-800"
-              : "bg-rose-950/80 text-rose-300 border-rose-700 animate-pulse"
+              ? "bg-amber-950/80 text-amber-300 border-amber-500/40 shadow-[0_0_10px_rgba(245,158,11,0.15)]"
+              : "bg-rose-950/80 text-rose-300 border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.3)] animate-pulse"
           }`}
         >
           <span
@@ -499,13 +499,13 @@ export const ExamRoom = () => {
 
         {/* Center Countdown Timer */}
         <div
-          className={`flex items-center gap-2 px-4 py-1.5 rounded-xl border font-mono font-bold text-sm sm:text-base ${
+          className={`flex items-center gap-2 px-4 py-1.5 rounded-full border font-mono font-bold text-sm sm:text-base ${
             secondsRemaining < 300
-              ? "bg-rose-950/80 text-rose-300 border-rose-800 animate-pulse"
-              : "bg-slate-950 text-indigo-300 border-slate-800"
+              ? "bg-rose-950/80 text-rose-300 border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.3)] animate-pulse"
+              : "bg-purple-950/80 text-purple-300 border border-purple-500/40 shadow-[0_0_12px_rgba(168,85,247,0.2)]"
           }`}
         >
-          <Clock className="h-4 w-4" />
+          <Clock className="h-4 w-4 text-purple-400" />
           <span>{formatTimer(secondsRemaining)}</span>
         </div>
 
@@ -513,7 +513,7 @@ export const ExamRoom = () => {
         <button
           disabled={isLocked || submitting}
           onClick={() => setShowSubmitModal(true)}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-semibold text-xs shadow-lg shadow-emerald-600/20 cursor-pointer transition-all"
+          className="flex items-center gap-1.5 px-5 py-2 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 disabled:opacity-40 text-white font-bold text-xs shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer transition-all active:scale-95"
         >
           <Send className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">Finish &</span> Submit
@@ -523,19 +523,22 @@ export const ExamRoom = () => {
       {/* Main Content: Left Questions, Right Webcam & Telemetry */}
       <div className="max-w-7xl mx-auto w-full p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
         {/* Left 2 Cols: Question Area */}
-        <div className="lg:col-span-2 flex flex-col justify-between bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-xl min-h-[500px]">
+        <div className="lg:col-span-2 flex flex-col justify-between bg-slate-950/70 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_10px_30px_rgba(0,0,0,0.6)] min-h-[500px] relative overflow-hidden">
+          {/* Subtle top laser glow line */}
+          <div className="absolute top-0 inset-x-8 h-[1.5px] bg-gradient-to-r from-transparent via-purple-400/40 to-transparent pointer-events-none" />
+
           <div>
             {/* Question Progress Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800 mb-6">
-              <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">
+            <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] mb-6">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-purple-300 bg-purple-950/80 border border-purple-500/30 px-3 py-1 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.15)]">
                 Question {currentQIndex + 1} of {totalQuestions}
               </span>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-slate-400 font-mono">
                   Marks: {currentQuestion.marks || 1}
                 </span>
                 {savingAnswer && (
-                  <span className="text-[10px] text-indigo-400 font-mono animate-pulse">
+                  <span className="text-[10px] text-purple-400 font-mono animate-pulse">
                     Saving...
                   </span>
                 )}
@@ -543,7 +546,7 @@ export const ExamRoom = () => {
             </div>
 
             {/* Question Text */}
-            <h3 className="text-base sm:text-lg font-semibold text-white leading-relaxed mb-6">
+            <h3 className="text-base sm:text-lg font-bold text-white leading-relaxed mb-6 font-heading">
               {currentQuestion.questionText}
             </h3>
 
@@ -555,24 +558,24 @@ export const ExamRoom = () => {
                   <div
                     key={oIdx}
                     onClick={() => !isLocked && handleSelectOption(oIdx)}
-                    className={`flex items-center gap-3.5 p-4 rounded-xl border text-sm font-medium transition-all ${
+                    className={`flex items-center gap-3.5 p-4 rounded-2xl border text-sm font-medium transition-all ${
                       isLocked
-                        ? "opacity-50 cursor-not-allowed bg-slate-950/40 border-slate-800 text-slate-500"
+                        ? "opacity-50 cursor-not-allowed bg-slate-950/40 border-white/5 text-slate-500"
                         : isSelected
-                        ? "bg-indigo-600/20 border-indigo-500 text-white shadow-md cursor-pointer"
-                        : "bg-slate-950/60 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-950 cursor-pointer"
+                        ? "bg-purple-950/40 border-purple-500/60 text-white shadow-[0_0_15px_rgba(168,85,247,0.2)] cursor-pointer"
+                        : "bg-slate-900/60 border-white/10 text-slate-300 hover:border-purple-500/30 hover:bg-slate-900 cursor-pointer"
                     }`}
                   >
                     <div
                       className={`h-5 w-5 rounded-full border flex items-center justify-center shrink-0 transition-colors ${
                         isSelected
-                          ? "border-indigo-400 bg-indigo-600 text-white"
-                          : "border-slate-700 bg-slate-900"
+                          ? "border-purple-400 bg-purple-600 text-white shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+                          : "border-slate-700 bg-slate-950"
                       }`}
                     >
                       {isSelected && <span className="h-2 w-2 rounded-full bg-white" />}
                     </div>
-                    <span className="flex-1">{option}</span>
+                    <span className="flex-1 leading-relaxed">{option}</span>
                   </div>
                 );
               })}
@@ -580,14 +583,14 @@ export const ExamRoom = () => {
           </div>
 
           {/* Navigation Controls */}
-          <div className="pt-8 border-t border-slate-800 flex items-center justify-between mt-6">
+          <div className="pt-8 border-t border-white/[0.08] flex items-center justify-between mt-6">
             <button
               disabled={currentQIndex === 0 || isLocked}
               onClick={() => setCurrentQIndex((prev) => Math.max(0, prev - 1))}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold disabled:opacity-40 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-white/10 text-slate-300 text-xs font-semibold disabled:opacity-40 transition-colors cursor-pointer"
             >
               <ChevronLeft className="h-4 w-4" />
-              Previous
+              <span>Previous</span>
             </button>
 
             {/* Question Number Dots */}
@@ -597,12 +600,12 @@ export const ExamRoom = () => {
                   key={idx}
                   disabled={isLocked}
                   onClick={() => setCurrentQIndex(idx)}
-                  className={`h-7 w-7 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  className={`h-7 w-7 rounded-xl text-xs font-mono font-semibold transition-all cursor-pointer ${
                     currentQIndex === idx
-                      ? "bg-indigo-600 text-white ring-2 ring-indigo-400"
+                      ? "bg-gradient-to-r from-purple-500 to-violet-600 text-white ring-2 ring-purple-400/50 shadow-[0_0_12px_rgba(168,85,247,0.4)]"
                       : answers[q._id] !== undefined
-                      ? "bg-emerald-950 text-emerald-300 border border-emerald-800"
-                      : "bg-slate-950 text-slate-400 border border-slate-800 hover:border-slate-700"
+                      ? "bg-emerald-950/80 text-emerald-300 border border-emerald-500/40"
+                      : "bg-slate-900/80 text-slate-400 border border-white/10 hover:border-purple-400/30"
                   }`}
                 >
                   {idx + 1}
@@ -615,9 +618,9 @@ export const ExamRoom = () => {
               onClick={() =>
                 setCurrentQIndex((prev) => Math.min(totalQuestions - 1, prev + 1))
               }
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold disabled:opacity-40 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-5 py-2 rounded-full bg-gradient-to-r from-purple-500 via-violet-500 to-purple-600 hover:from-purple-400 hover:to-violet-400 text-white text-xs font-bold disabled:opacity-40 transition-all shadow-[0_0_15px_rgba(168,85,247,0.3)] cursor-pointer active:scale-95"
             >
-              Next
+              <span>Next</span>
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
@@ -626,20 +629,23 @@ export const ExamRoom = () => {
         {/* Right Col: Live Webcam & Telemetry Monitor */}
         <div className="space-y-4">
           {/* Webcam Box */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+          <div className="bg-slate-950/70 backdrop-blur-xl border border-white/10 rounded-3xl p-5 shadow-[0_10px_30px_rgba(0,0,0,0.6)] space-y-3 relative overflow-hidden">
+            {/* Subtle top laser glow line */}
+            <div className="absolute top-0 inset-x-6 h-[1.5px] bg-gradient-to-r from-transparent via-purple-400/40 to-transparent pointer-events-none" />
+
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-white flex items-center gap-1.5">
-                <Camera className="h-4 w-4 text-indigo-400" />
+              <span className="text-xs font-bold text-white flex items-center gap-1.5 font-heading">
+                <Camera className="h-4 w-4 text-purple-400" />
                 Live Camera Telemetry
               </span>
-              <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-950 border border-emerald-800">
+              <span className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400 px-2.5 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/40 shadow-[0_0_8px_rgba(16,185,129,0.2)]">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 Active Monitor
               </span>
             </div>
 
             {/* Video preview container */}
-            <div className="rounded-xl overflow-hidden aspect-video bg-slate-950 border border-slate-800 relative flex items-center justify-center">
+            <div className="rounded-2xl overflow-hidden aspect-video bg-slate-950 border border-white/10 relative flex items-center justify-center">
               <video
                 ref={videoRef}
                 autoPlay
@@ -652,13 +658,13 @@ export const ExamRoom = () => {
 
               {!isCameraActive && (
                 <div className="text-center p-4 space-y-2 text-slate-500">
-                  <CameraOff className="h-8 w-8 mx-auto opacity-50" />
-                  <p className="text-xs">
+                  <CameraOff className="h-8 w-8 mx-auto opacity-50 text-purple-400" />
+                  <p className="text-xs font-mono">
                     {cameraError || "Camera feed starting..."}
                   </p>
                   <button
                     onClick={startCamera}
-                    className="px-3 py-1 rounded-lg bg-indigo-600 text-white text-xs font-semibold"
+                    className="px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-500 to-violet-600 text-white text-xs font-bold shadow-[0_0_15px_rgba(168,85,247,0.3)] active:scale-95"
                   >
                     Grant Camera Access
                   </button>
@@ -666,46 +672,46 @@ export const ExamRoom = () => {
               )}
 
               {/* Safe on-device overlay badge */}
-              <div className="absolute bottom-2 left-2 bg-slate-950/85 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-mono text-emerald-300 border border-emerald-800/80 flex items-center gap-1.5 shadow-md">
+              <div className="absolute bottom-2 left-2 bg-slate-950/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-mono text-emerald-300 border border-emerald-500/40 flex items-center gap-1.5 shadow-md">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Active On-Device AI Engine (Multi-Face & Phone Auto-Detection)
+                On-Device AI Engine (Multi-Face & Phone Auto-Detection)
               </div>
             </div>
 
-            <p className="text-[11px] text-slate-500 text-center leading-tight">
+            <p className="text-[11px] text-slate-400 text-center leading-tight font-sans">
               Privacy by Design: Frames processed locally. Violations save snapshot to <code>/video/:studentId/allvideo/</code>
             </p>
           </div>
 
           {/* Active Status Box */}
-          <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
-              <span className="flex items-center gap-1.5">
-                <Shield className="h-4 w-4 text-indigo-400" />
+          <div className="p-4 rounded-2xl bg-slate-950/70 backdrop-blur-xl border border-white/10 space-y-2">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-200">
+              <span className="flex items-center gap-1.5 font-heading">
+                <Shield className="h-4 w-4 text-purple-400" />
                 Examination Integrity Shield
               </span>
               <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full ${
                   violationCount === 0
-                    ? "bg-emerald-950 text-emerald-300 border border-emerald-800"
+                    ? "bg-emerald-950/80 text-emerald-300 border border-emerald-500/40"
                     : violationCount === 1
-                    ? "bg-amber-950 text-amber-300 border border-amber-800"
-                    : "bg-rose-950 text-rose-300 border border-rose-800 animate-pulse"
+                    ? "bg-amber-950/80 text-amber-300 border border-amber-500/40"
+                    : "bg-rose-950/80 text-rose-300 border border-rose-500/50 animate-pulse"
                 }`}
               >
                 {violationCount} / 3 Alerts
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
+            <p className="text-[11px] text-slate-400 leading-relaxed font-sans">
               Window focus, tab visibility, shortcuts, and webcam are strictly monitored. Maximum allowed alerts: <strong>3</strong> before automatic submission.
             </p>
           </div>
 
           {/* HACKATHON LIVE DEMO SIMULATION BAR */}
-          <div className="p-3.5 rounded-xl bg-slate-950 border border-indigo-900/40 space-y-2.5">
-            <div className="flex items-center gap-1.5 text-[11px] font-bold text-indigo-400 uppercase tracking-wider">
-              <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-              Hackathon Pitch Testing Triggers
+          <div className="p-4 rounded-2xl bg-slate-950/70 backdrop-blur-xl border border-purple-500/30 space-y-2.5 shadow-[0_0_20px_rgba(168,85,247,0.1)]">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-purple-300 uppercase tracking-wider font-mono">
+              <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+              <span>Pitch Demonstration Triggers</span>
             </div>
             <p className="text-[10px] text-slate-400 leading-snug">
               Click any button below to trigger real-time alert modal, capture snapshot, and test 3-alert auto-submit:
@@ -722,7 +728,7 @@ export const ExamRoom = () => {
                     message: "Mobile phone or unauthorized electronic device detected in camera frame!",
                   })
                 }
-                className="py-2 px-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-indigo-300 text-[11px] font-semibold text-left transition-colors cursor-pointer hover:border-indigo-600 disabled:opacity-40"
+                className="py-2 px-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-white/10 text-purple-300 text-[11px] font-semibold text-left transition-colors cursor-pointer hover:border-purple-500/40 disabled:opacity-40"
               >
                 📱 Phone Detected
               </button>
@@ -737,7 +743,7 @@ export const ExamRoom = () => {
                     message: "Prolonged gaze deviation detected! Keep attention centered on screen.",
                   })
                 }
-                className="py-2 px-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-indigo-300 text-[11px] font-semibold text-left transition-colors cursor-pointer hover:border-indigo-600 disabled:opacity-40"
+                className="py-2 px-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-white/10 text-purple-300 text-[11px] font-semibold text-left transition-colors cursor-pointer hover:border-purple-500/40 disabled:opacity-40"
               >
                 👀 Looking Away
               </button>
@@ -752,7 +758,7 @@ export const ExamRoom = () => {
                     message: "Multiple individuals detected in webcam view! Secondary persons are not permitted.",
                   })
                 }
-                className="py-2 px-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-indigo-300 text-[11px] font-semibold text-left transition-colors cursor-pointer hover:border-indigo-600 disabled:opacity-40"
+                className="py-2 px-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-white/10 text-purple-300 text-[11px] font-semibold text-left transition-colors cursor-pointer hover:border-purple-500/40 disabled:opacity-40"
               >
                 👥 Multiple Faces
               </button>
@@ -767,7 +773,7 @@ export const ExamRoom = () => {
                     message: "Face not detected in camera frame! Please remain seated facing webcam.",
                   })
                 }
-                className="py-2 px-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-indigo-300 text-[11px] font-semibold text-left transition-colors cursor-pointer hover:border-indigo-600 disabled:opacity-40"
+                className="py-2 px-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-white/10 text-purple-300 text-[11px] font-semibold text-left transition-colors cursor-pointer hover:border-purple-500/40 disabled:opacity-40"
               >
                 👤 No Face in View
               </button>
@@ -778,9 +784,9 @@ export const ExamRoom = () => {
 
       {/* PROCTORING ALERT MODAL (ALERTS 1, 2, AND 3 AUTO-SUBMIT) */}
       {activeAlert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in select-none">
           <div
-            className={`bg-slate-900 border-2 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 text-center shadow-2xl relative overflow-hidden ${
+            className={`bg-[#090d18]/95 border-2 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 text-center shadow-[0_0_60px_rgba(0,0,0,0.8)] relative overflow-hidden backdrop-blur-2xl ${
               activeAlert.isFinal
                 ? "border-rose-600 shadow-rose-950/80 animate-pulse"
                 : activeAlert.violationNumber === 2
@@ -843,7 +849,7 @@ export const ExamRoom = () => {
                   : `🚨 PROCTOR WARNING (${activeAlert.violationNumber} OF 3)`}
               </span>
 
-              <h3 className="text-xl font-extrabold text-white">
+              <h3 className="text-xl font-extrabold text-white font-heading">
                 {activeAlert.isFinal
                   ? "Test Locked & Auto-Submitting"
                   : activeAlert.violationNumber === 2
@@ -855,12 +861,12 @@ export const ExamRoom = () => {
               {(() => {
                 const act = getActivityDetails(activeAlert.type);
                 return (
-                  <div className="p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 text-left space-y-1.5">
-                    <div className="flex items-center gap-2 font-bold text-sm text-white">
+                  <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-white/10 text-left space-y-1.5">
+                    <div className="flex items-center gap-2 font-bold text-sm text-white font-heading">
                       <span className="text-lg">{act.icon}</span>
-                      <span className="text-indigo-300">{act.name}</span>
+                      <span className="text-purple-300">{act.name}</span>
                     </div>
-                    <p className="text-xs text-rose-200 font-medium leading-relaxed">
+                    <p className="text-xs text-rose-200 font-medium leading-relaxed font-sans">
                       {act.studentReason || activeAlert.message}
                     </p>
                   </div>
@@ -870,24 +876,24 @@ export const ExamRoom = () => {
 
             {/* Snapshot Evidence Thumbnail */}
             {activeAlert.snapshot && (
-              <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 text-left space-y-2">
+              <div className="p-3 bg-slate-950 rounded-2xl border border-white/10 text-left space-y-2">
                 <div className="flex items-center justify-between text-[11px] font-semibold text-slate-300">
                   <span className="flex items-center gap-1.5">
-                    <Camera className="h-3.5 w-3.5 text-indigo-400" />
+                    <Camera className="h-3.5 w-3.5 text-purple-400" />
                     Evidence Snapshot Captured
                   </span>
                   <span className="text-[10px] font-mono text-emerald-400">
                     Saved to Video Archive
                   </span>
                 </div>
-                <div className="relative aspect-video rounded-xl overflow-hidden border border-slate-800 bg-black">
+                <div className="relative aspect-video rounded-xl overflow-hidden border border-white/10 bg-black">
                   <img
                     src={activeAlert.snapshot}
                     alt="Violation snapshot"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <p className="text-[10px] text-slate-500 leading-tight">
+                <p className="text-[10px] text-slate-400 leading-tight font-sans">
                   Frame has been securely saved to <code>/video/:studentId/allvideo/</code> and notified to the teacher review queue.
                 </p>
               </div>
@@ -896,18 +902,18 @@ export const ExamRoom = () => {
             {/* Rule Notice */}
             <div className="text-[11px] text-slate-400 leading-snug">
               {activeAlert.isFinal ? (
-                <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-700 text-rose-200 font-bold space-y-1">
+                <div className="p-3 rounded-2xl bg-rose-950/80 border border-rose-500/40 text-rose-200 font-bold space-y-1">
                   <p>Maximum of 3 alerts reached. Test is now auto-submitting...</p>
                   <div className="text-lg font-mono text-white animate-pulse">
                     Auto-submitting in {autoSubmitCountdown ?? 3}s
                   </div>
                 </div>
               ) : activeAlert.violationNumber === 2 ? (
-                <p className="text-rose-300 font-semibold">
+                <p className="text-rose-300 font-semibold font-sans">
                   ⚠️ <strong>LAST WARNING!</strong> You have <strong>1 warning left</strong>. A 3rd violation will immediately terminate and submit your exam automatically.
                 </p>
               ) : (
-                <p className="text-amber-300 font-semibold">
+                <p className="text-amber-300 font-semibold font-sans">
                   ⚠️ You have <strong>2 warnings remaining</strong> before automatic test submission.
                 </p>
               )}
@@ -917,10 +923,10 @@ export const ExamRoom = () => {
             {!activeAlert.isFinal && (
               <button
                 onClick={() => setActiveAlert(null)}
-                className={`w-full py-3 px-4 rounded-xl text-white font-bold text-xs shadow-lg transition-all cursor-pointer ${
+                className={`w-full py-3 px-4 rounded-full text-white font-bold text-xs shadow-lg transition-all cursor-pointer active:scale-95 ${
                   activeAlert.violationNumber === 2
-                    ? "bg-rose-600 hover:bg-rose-500 shadow-rose-600/30"
-                    : "bg-amber-600 hover:bg-amber-500 shadow-amber-600/30"
+                    ? "bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 shadow-rose-600/30"
+                    : "bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 shadow-amber-600/30"
                 }`}
               >
                 {activeAlert.violationNumber === 2
@@ -934,28 +940,31 @@ export const ExamRoom = () => {
 
       {/* Confirmation Submit Modal */}
       {showSubmitModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <h3 className="text-lg font-bold text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in select-none">
+          <div className="bg-[#090d18]/95 border border-white/10 rounded-3xl max-w-md w-full p-6 sm:p-7 space-y-4 shadow-[0_0_50px_rgba(0,0,0,0.8)] relative overflow-hidden backdrop-blur-2xl">
+            {/* Top laser accent line */}
+            <div className="absolute top-0 inset-x-8 h-[1.5px] bg-gradient-to-r from-transparent via-purple-400/50 to-transparent pointer-events-none" />
+
+            <h3 className="text-lg font-bold text-white font-heading">
               Confirm Final Submission
             </h3>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              You have answered <strong>{answeredCount}</strong> of{" "}
-              <strong>{totalQuestions}</strong> questions. Once submitted, your answers
+            <p className="text-xs text-slate-300 leading-relaxed font-sans">
+              You have answered <strong className="text-purple-300 font-mono">{answeredCount}</strong> of{" "}
+              <strong className="text-purple-300 font-mono">{totalQuestions}</strong> questions. Once submitted, your answers
               will be permanently locked and graded.
             </p>
 
             <div className="pt-2 flex items-center justify-end gap-3">
               <button
                 onClick={() => setShowSubmitModal(false)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+                className="px-4 py-2 rounded-full bg-slate-900/80 hover:bg-slate-800 text-slate-300 text-xs font-semibold border border-white/10 active:scale-95 transition-all"
               >
                 Review Answers
               </button>
               <button
                 disabled={submitting}
                 onClick={handleSubmitExam}
-                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-lg shadow-emerald-600/20 disabled:opacity-50"
+                className="px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-bold shadow-[0_0_20px_rgba(16,185,129,0.35)] disabled:opacity-50 active:scale-95 transition-all"
               >
                 {submitting ? "Submitting..." : "Yes, Submit Exam"}
               </button>
@@ -966,19 +975,19 @@ export const ExamRoom = () => {
 
       {/* Floating Live Teacher Review Verdict Notification */}
       {teacherVerdictToast && (
-        <div className="fixed top-20 right-6 z-50 max-w-md w-full shadow-2xl animate-fade-in">
+        <div className="fixed top-20 right-6 z-50 max-w-md w-full shadow-[0_0_35px_rgba(0,0,0,0.8)] animate-fade-in select-none">
           <div
-            className={`p-4 rounded-2xl border flex items-start gap-3 backdrop-blur-md ${
+            className={`p-5 rounded-3xl border-2 flex items-start gap-3.5 backdrop-blur-2xl bg-[#090d18]/95 ${
               teacherVerdictToast.type === "false_alarm"
-                ? "bg-emerald-950/95 border-emerald-500/80 text-emerald-100 ring-2 ring-emerald-500/30"
-                : "bg-rose-950/95 border-rose-500/80 text-rose-100 ring-2 ring-rose-500/30"
+                ? "border-emerald-500/80 text-emerald-100 shadow-[0_0_30px_rgba(16,185,129,0.3)] ring-1 ring-emerald-500/30"
+                : "border-rose-500/80 text-rose-100 shadow-[0_0_30px_rgba(244,63,94,0.3)] ring-1 ring-rose-500/30"
             }`}
           >
             <div
-              className={`p-2 rounded-xl shrink-0 ${
+              className={`p-2.5 rounded-2xl shrink-0 ${
                 teacherVerdictToast.type === "false_alarm"
-                  ? "bg-emerald-900/80 text-emerald-300"
-                  : "bg-rose-900/80 text-rose-300"
+                  ? "bg-emerald-950/80 border border-emerald-500/40 text-emerald-300"
+                  : "bg-rose-950/80 border border-rose-500/40 text-rose-300"
               }`}
             >
               {teacherVerdictToast.type === "false_alarm" ? (
@@ -990,30 +999,30 @@ export const ExamRoom = () => {
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-white">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-white font-heading">
                   {teacherVerdictToast.title}
                 </h4>
                 <button
                   onClick={() => setTeacherVerdictToast(null)}
-                  className="text-slate-400 hover:text-white p-0.5 cursor-pointer"
+                  className="w-6 h-6 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center text-xs transition-colors cursor-pointer"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <p className="text-xs text-slate-200 mt-1 leading-snug">
+              <p className="text-xs text-slate-200 mt-1 leading-snug font-sans">
                 {teacherVerdictToast.message}
               </p>
               <div className="mt-2.5 flex items-center gap-2">
                 <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                  className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${
                     teacherVerdictToast.type === "false_alarm"
-                      ? "bg-emerald-900/60 border-emerald-600 text-emerald-200"
-                      : "bg-rose-900/60 border-rose-600 text-rose-200"
+                      ? "bg-emerald-900/60 border-emerald-500/50 text-emerald-200"
+                      : "bg-rose-900/60 border-rose-500/50 text-rose-200"
                   }`}
                 >
                   Active Warnings: {teacherVerdictToast.count} / 3
                 </span>
-                <span className="text-[10px] text-slate-400">Live synced with teacher console</span>
+                <span className="text-[10px] text-slate-400 font-mono">Live synced with console</span>
               </div>
             </div>
           </div>

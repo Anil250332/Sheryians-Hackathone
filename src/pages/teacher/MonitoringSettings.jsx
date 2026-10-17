@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../../services/api.js";
-import { Sliders, Save, CheckCircle, Shield, RefreshCw } from "lucide-react";
+import { Sliders, Save, CheckCircle, Shield, RefreshCw, Sparkles, Activity } from "lucide-react";
 
 export const MonitoringSettings = () => {
   const [settings, setSettings] = useState(null);
@@ -42,64 +42,78 @@ export const MonitoringSettings = () => {
 
   if (loading && !settings) {
     return (
-      <div className="flex items-center justify-center p-12 text-slate-400 gap-3">
-        <RefreshCw className="h-5 w-5 animate-spin text-indigo-400" />
-        Loading AI monitoring configuration...
+      <div className="flex items-center justify-center p-12 text-slate-400 gap-3 rounded-3xl bg-slate-950/60 border border-white/10 backdrop-blur-xl">
+        <RefreshCw className="h-5 w-5 animate-spin text-purple-400" />
+        <span className="font-mono text-xs">Loading AI monitoring configuration...</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto pb-12">
+    <div className="space-y-6 max-w-4xl mx-auto pb-12 select-none">
       <div>
-        <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-          <Sliders className="h-6 w-6 text-indigo-400" />
-          AI Monitoring & False-Alarm Tuning
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-mono font-medium mb-2 shadow-[0_0_12px_rgba(168,85,247,0.15)]">
+          <Sliders className="w-3.5 h-3.5 text-purple-400" />
+          <span>Rule Calibration</span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-heading">
+          AI Telemetry & False-Alarm Calibration
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Calibrate detection sensitivity, cooldown periods, and inspection thresholds
+        <p className="text-xs sm:text-sm text-slate-400 mt-1 font-sans">
+          Calibrate detection sensitivity, cooldown periods, and violation threshold parameters
         </p>
       </div>
 
       {/* Analytics KPI banner */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-900/80 border border-slate-800 rounded-2xl">
-        <div>
-          <span className="text-[11px] text-slate-500 block">Total Telemetry Flags</span>
-          <span className="text-xl font-bold text-white">{analytics?.totalEvents || 0}</span>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 bg-slate-950/70 backdrop-blur-xl border border-white/10 rounded-3xl shadow-[0_10px_30px_rgba(0,0,0,0.6)] relative overflow-hidden">
+        {/* Subtle top laser glow line */}
+        <div className="absolute top-0 inset-x-8 h-[1.5px] bg-gradient-to-r from-transparent via-purple-400/40 to-transparent pointer-events-none" />
+
+        <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-white/5">
+          <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider block">Total Telemetry Flags</span>
+          <span className="text-2xl font-extrabold text-white font-mono mt-1 block">{analytics?.totalEvents || 0}</span>
         </div>
-        <div>
-          <span className="text-[11px] text-slate-500 block">Events Reviewed</span>
-          <span className="text-xl font-bold text-indigo-300">{analytics?.reviewedEvents || 0}</span>
+        <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-white/5">
+          <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider block">Events Reviewed</span>
+          <span className="text-2xl font-extrabold text-purple-300 font-mono mt-1 block">{analytics?.reviewedEvents || 0}</span>
         </div>
-        <div>
-          <span className="text-[11px] text-slate-500 block">False Alarms Resolved</span>
-          <span className="text-xl font-bold text-emerald-400">{analytics?.falseAlarms || 0}</span>
+        <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-white/5">
+          <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider block">False Alarms Resolved</span>
+          <span className="text-2xl font-extrabold text-emerald-400 font-mono mt-1 block">{analytics?.falseAlarms || 0}</span>
         </div>
-        <div>
-          <span className="text-[11px] text-slate-500 block">False Alarm Rate</span>
-          <span className="text-xl font-bold text-amber-300">{analytics?.falseAlarmRate || 0}%</span>
+        <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-white/5">
+          <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider block">False Alarm Rate</span>
+          <span className="text-2xl font-extrabold text-amber-300 font-mono mt-1 block">{analytics?.falseAlarmRate || 0}%</span>
         </div>
       </div>
 
       {savedSuccess && (
-        <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs flex items-center gap-2">
-          <CheckCircle className="h-4 w-4" />
-          Settings updated successfully! Active examinations will use these calibrated thresholds.
+        <div className="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+          <CheckCircle className="h-4 w-4 text-emerald-400" />
+          <span>Settings updated successfully! Active examinations will automatically use these calibrated thresholds.</span>
         </div>
       )}
 
       {/* Settings Form */}
-      <form onSubmit={handleSave} className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl">
-        <h3 className="text-sm font-semibold text-white border-b border-slate-800 pb-3">
-          Detection Persistence Thresholds (Seconds)
-        </h3>
+      <form onSubmit={handleSave} className="bg-slate-950/70 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 space-y-6 shadow-[0_10px_30px_rgba(0,0,0,0.6)] relative overflow-hidden">
+        {/* Subtle top laser glow line */}
+        <div className="absolute top-0 inset-x-8 h-[1.5px] bg-gradient-to-r from-transparent via-purple-400/40 to-transparent pointer-events-none" />
+
+        <div className="flex items-center gap-2 border-b border-white/[0.08] pb-3">
+          <Activity className="w-4 h-4 text-purple-400" />
+          <h3 className="text-sm font-bold text-white font-heading">
+            Detection Persistence Thresholds (Seconds)
+          </h3>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
           {/* No Face threshold */}
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-slate-300 font-medium">No-Face Trigger Duration</span>
-              <span className="font-mono text-indigo-400">{settings.noFaceThresholdSec}s</span>
+          <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2.5">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-200 font-medium">No-Face Trigger Duration</span>
+              <span className="font-mono text-purple-300 px-2 py-0.5 rounded-full bg-purple-950/80 border border-purple-500/40 text-[11px] font-bold">
+                {settings.noFaceThresholdSec}s
+              </span>
             </div>
             <input
               type="range"
@@ -109,18 +123,20 @@ export const MonitoringSettings = () => {
               onChange={(e) =>
                 setSettings({ ...settings, noFaceThresholdSec: Number(e.target.value) })
               }
-              className="w-full accent-indigo-500"
+              className="w-full accent-purple-500 cursor-pointer"
             />
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-slate-400">
               Flags only if no face is detected continuously for this period.
             </p>
           </div>
 
           {/* Looking Away threshold */}
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-slate-300 font-medium">Looking-Away Duration</span>
-              <span className="font-mono text-indigo-400">{settings.lookingAwayThresholdSec}s</span>
+          <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2.5">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-200 font-medium">Looking-Away Duration</span>
+              <span className="font-mono text-purple-300 px-2 py-0.5 rounded-full bg-purple-950/80 border border-purple-500/40 text-[11px] font-bold">
+                {settings.lookingAwayThresholdSec}s
+              </span>
             </div>
             <input
               type="range"
@@ -133,18 +149,20 @@ export const MonitoringSettings = () => {
                   lookingAwayThresholdSec: Number(e.target.value),
                 })
               }
-              className="w-full accent-indigo-500"
+              className="w-full accent-purple-500 cursor-pointer"
             />
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-slate-400">
               Gaze deviation sustained before recording a potential flag.
             </p>
           </div>
 
           {/* Multiple Faces threshold */}
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-slate-300 font-medium">Multiple-Faces Trigger</span>
-              <span className="font-mono text-indigo-400">{settings.multipleFacesThresholdSec}s</span>
+          <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2.5">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-200 font-medium">Multiple-Faces Trigger</span>
+              <span className="font-mono text-purple-300 px-2 py-0.5 rounded-full bg-purple-950/80 border border-purple-500/40 text-[11px] font-bold">
+                {settings.multipleFacesThresholdSec}s
+              </span>
             </div>
             <input
               type="range"
@@ -157,18 +175,18 @@ export const MonitoringSettings = () => {
                   multipleFacesThresholdSec: Number(e.target.value),
                 })
               }
-              className="w-full accent-indigo-500"
+              className="w-full accent-purple-500 cursor-pointer"
             />
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-slate-400">
               Duration of secondary faces in view before flagging.
             </p>
           </div>
 
           {/* Phone Detection Confidence */}
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-slate-300 font-medium">Phone Confidence Threshold</span>
-              <span className="font-mono text-indigo-400">
+          <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-2.5">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-200 font-medium">Phone Confidence Threshold</span>
+              <span className="font-mono text-purple-300 px-2 py-0.5 rounded-full bg-purple-950/80 border border-purple-500/40 text-[11px] font-bold">
                 {Math.round(settings.phoneConfidenceThreshold * 100)}%
               </span>
             </div>
@@ -184,32 +202,32 @@ export const MonitoringSettings = () => {
                   phoneConfidenceThreshold: Number(e.target.value),
                 })
               }
-              className="w-full accent-indigo-500"
+              className="w-full accent-purple-500 cursor-pointer"
             />
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-slate-400">
               Minimum AI probability required before flagging a mobile device.
             </p>
           </div>
         </div>
 
         {/* Feature toggles */}
-        <div className="pt-4 border-t border-slate-800 space-y-3">
-          <h3 className="text-sm font-semibold text-white">Privacy & Evidence Collection</h3>
+        <div className="pt-4 border-t border-white/[0.08] space-y-3">
+          <h3 className="text-sm font-bold text-white font-heading">Privacy & Evidence Collection</h3>
           <div className="space-y-2.5">
-            <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-200 cursor-pointer">
+            <label className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-900/70 border border-white/10 text-xs text-slate-200 cursor-pointer hover:border-purple-500/30 transition-colors">
               <input
                 type="checkbox"
                 checked={settings.enableSnapshots}
                 onChange={(e) =>
                   setSettings({ ...settings, enableSnapshots: e.target.checked })
                 }
-                className="rounded border-slate-700 text-indigo-600 focus:ring-0"
+                className="rounded border-slate-700 text-purple-600 focus:ring-0 accent-purple-500"
               />
               <div>
-                <span className="font-medium block">
+                <span className="font-semibold block text-white font-heading">
                   Store Incident Snapshot Evidence (/video/:studentId/allvideo/)
                 </span>
-                <span className="text-[11px] text-slate-500">
+                <span className="text-[11px] text-slate-400">
                   Captures a single photographic frame only when a potential anomaly is triggered.
                 </span>
               </div>
@@ -221,13 +239,15 @@ export const MonitoringSettings = () => {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 ml-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs shadow-lg shadow-indigo-600/20 cursor-pointer transition-all disabled:opacity-50"
+            className="flex items-center gap-2 ml-auto px-6 py-2.5 bg-gradient-to-r from-purple-500 via-violet-500 to-purple-600 hover:from-purple-400 hover:to-violet-400 text-white font-bold rounded-full text-xs shadow-[0_0_20px_rgba(168,85,247,0.35)] hover:shadow-[0_0_25px_rgba(168,85,247,0.55)] cursor-pointer transition-all disabled:opacity-50 active:scale-95"
           >
             <Save className="h-4 w-4" />
-            {saving ? "Saving..." : "Save Tuning Configuration"}
+            <span>{saving ? "Saving..." : "Save Tuning Configuration"}</span>
           </button>
         </div>
       </form>
     </div>
   );
 };
+
+export default MonitoringSettings;
