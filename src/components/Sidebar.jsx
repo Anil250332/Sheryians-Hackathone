@@ -44,7 +44,7 @@ export const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 border-r border-slate-800 bg-slate-900 text-slate-300 hidden lg:flex flex-col sticky top-16 h-[calc(100vh-4rem)] shrink-0 z-30">
+    <aside className="w-64 border-r border-slate-800 bg-slate-900 text-slate-300 hidden lg:flex flex-col sticky top-0 h-screen shrink-0 z-30">
       {/* Brand Header */}
       <div className="h-16 flex items-center px-5 border-b border-slate-800/80 bg-slate-900/90 shrink-0">
         <Link to="/" className="flex items-center gap-2.5 group">

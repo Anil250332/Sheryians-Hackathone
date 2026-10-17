@@ -50,7 +50,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 // Layout Wrapper
 const DashboardLayout = ({ children }) => {
   return (
-    <div className="flex flex-1 min-h-[calc(100vh-4rem)] items-start">
+    <div className="flex flex-1 min-h-screen items-start">
       <Sidebar />
       <main className="flex-1 p-4 sm:p-8 max-w-7xl mx-auto w-full min-w-0">
         {children}
