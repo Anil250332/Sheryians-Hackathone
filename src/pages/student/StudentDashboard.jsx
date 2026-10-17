@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import api from "../../services/api.js";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchStudentDashboard } from "../../store/slices/studentSlice.js";
 import {
   BookOpen,
   Clock,
@@ -17,30 +18,17 @@ import {
 } from "lucide-react";
 
 export const StudentDashboard = () => {
-  const [exams, setExams] = useState([]);
-  const [myAttempts, setMyAttempts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { exams, myAttempts, loading } = useSelector((state) => state.student);
   const navigate = useNavigate();
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      const [examsRes, attemptsRes] = await Promise.all([
-        api.get("/exams").catch(() => ({ data: { data: [] } })),
-        api.get("/attempts/my").catch(() => ({ data: { data: [] } })),
-      ]);
-      setExams(examsRes.data.data || []);
-      setMyAttempts(attemptsRes.data.data || []);
-    } catch (err) {
-      console.error("Failed to load student dashboard data:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    dispatch(fetchStudentDashboard());
+  }, [dispatch]);
+
+  const handleRefresh = () => {
+    dispatch(fetchStudentDashboard());
+  };
 
   return (
     <div className="space-y-6">
@@ -63,7 +51,7 @@ export const StudentDashboard = () => {
           </div>
 
           <button
-            onClick={fetchDashboardData}
+            onClick={handleRefresh}
             className="self-start md:self-center flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium cursor-pointer transition-all"
           >
             <RefreshCw className="h-3.5 w-3.5" />
