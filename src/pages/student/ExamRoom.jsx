@@ -5,6 +5,7 @@ import { getSocket } from "../../services/socket.js";
 import { useCameraStream } from "../../hooks/useCameraStream.js";
 import { useTabVisibility } from "../../hooks/useTabVisibility.js";
 import { initAIVisionModel, analyzeWebcamFrame } from "../../services/aiVision.service.js";
+import { getActivityDetails } from "../../utils/activityDetails.js";
 import confetti from "canvas-confetti";
 import {
   Clock,
@@ -119,8 +120,8 @@ export const ExamRoom = () => {
       }
       lastViolationTimeRef.current = now;
 
-      // 1. Immediately capture snapshot evidence from live webcam
-      const snapshot = captureSnapshot ? captureSnapshot() : null;
+      // 1. Immediately capture snapshot evidence from live webcam or telemetry canvas
+      const snapshot = captureSnapshot ? captureSnapshot(type) : null;
 
       // 2. Increment violation count
       const nextCount = violationCountRef.current + 1;
@@ -850,9 +851,21 @@ export const ExamRoom = () => {
                   : "Unauthorized Activity Detected"}
               </h3>
 
-              <p className="text-xs text-rose-200 font-medium leading-relaxed bg-rose-950/40 p-3.5 rounded-xl border border-rose-800/60">
-                {activeAlert.message}
-              </p>
+              {/* Explicit Activity & Reason Box */}
+              {(() => {
+                const act = getActivityDetails(activeAlert.type);
+                return (
+                  <div className="p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 text-left space-y-1.5">
+                    <div className="flex items-center gap-2 font-bold text-sm text-white">
+                      <span className="text-lg">{act.icon}</span>
+                      <span className="text-indigo-300">{act.name}</span>
+                    </div>
+                    <p className="text-xs text-rose-200 font-medium leading-relaxed">
+                      {act.studentReason || activeAlert.message}
+                    </p>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Snapshot Evidence Thumbnail */}

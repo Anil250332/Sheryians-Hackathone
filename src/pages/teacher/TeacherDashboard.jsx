@@ -5,11 +5,14 @@ import { getSocket } from "../../services/socket.js";
 import { RiskBadge } from "../../components/RiskBadge.jsx";
 import { SnapshotModal } from "../../components/SnapshotModal.jsx";
 import { getEvidenceUrl } from "../../utils/imageUrl.js";
+import { getActivityDetails } from "../../utils/activityDetails.js";
 import {
   FileText,
   Users,
   ShieldAlert,
   CheckCircle2,
+  CheckCircle,
+  AlertOctagon,
   Activity,
   PlusCircle,
   Eye,
@@ -20,6 +23,7 @@ import {
   Video,
   FileCheck2,
   Clock,
+  X,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -37,6 +41,25 @@ export const TeacherDashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [liveAlerts, setLiveAlerts] = useState([]);
+
+  // Audio chime for teacher when student triggers suspicious activity
+  const playChime = () => {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(659.25, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.12);
+      gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.45);
+    } catch (e) {}
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -50,6 +73,16 @@ export const TeacherDashboard = () => {
     }
   };
 
+  const handleQuickReview = async (eventId, decision) => {
+    try {
+      await api.post(`/events/${eventId}/reviews`, { decision });
+      setLiveAlerts((prev) => prev.filter((a) => a.id !== eventId));
+      fetchDashboardData();
+    } catch (err) {
+      alert("Review action failed: " + (err.response?.data?.message || err.message));
+    }
+  };
+
   useEffect(() => {
     fetchDashboardData();
 
@@ -58,17 +91,30 @@ export const TeacherDashboard = () => {
     socket.emit("join:teacher");
 
     socket.on("attempt:started", (payload) => {
-      console.log("Live Socket: attempt started", payload);
       fetchDashboardData();
     });
 
     socket.on("attempt:submitted", (payload) => {
-      console.log("Live Socket: attempt submitted", payload);
       fetchDashboardData();
     });
 
     socket.on("event:flagged", (payload) => {
       console.log("Live Socket: proctor event flagged", payload);
+      playChime();
+
+      const flaggedEvent = payload.event || {};
+      const act = getActivityDetails(flaggedEvent.type);
+
+      const alertToast = {
+        id: flaggedEvent._id || Date.now().toString(),
+        studentName: flaggedEvent.studentId?.name || "Student",
+        studentId: flaggedEvent.studentId?.studentId || "",
+        examTitle: flaggedEvent.examId?.title || "Exam Session",
+        activity: act,
+        time: new Date().toLocaleTimeString(),
+      };
+
+      setLiveAlerts((prev) => [alertToast, ...prev.slice(0, 4)]);
       fetchDashboardData();
     });
 
@@ -97,7 +143,76 @@ export const TeacherDashboard = () => {
     data || {};
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Real-time Floating Proctor Alert Toasts for Teacher */}
+      {liveAlerts.length > 0 && (
+        <div className="fixed top-20 right-6 z-50 flex flex-col gap-3 max-w-md w-full pointer-events-none">
+          {liveAlerts.map((alert) => (
+            <div
+              key={alert.id}
+              className="pointer-events-auto bg-slate-900/95 border-2 border-rose-500/80 backdrop-blur-xl rounded-2xl p-4 shadow-2xl shadow-rose-950/50 flex flex-col gap-2.5 animate-slide-in text-white"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{alert.activity.icon}</span>
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-rose-400 font-bold block">
+                      🚨 Live Activity Alert
+                    </span>
+                    <h4 className="text-sm font-bold text-white">
+                      {alert.studentName}{" "}
+                      <span className="text-xs font-normal text-slate-400 font-mono">
+                        ({alert.studentId || "Student"})
+                      </span>
+                    </h4>
+                  </div>
+                </div>
+                <button
+                  onClick={() =>
+                    setLiveAlerts((prev) => prev.filter((a) => a.id !== alert.id))
+                  }
+                  className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 space-y-1">
+                <div className="text-xs font-semibold text-rose-300 flex items-center gap-1.5">
+                  <span>Activity:</span>
+                  <span>{alert.activity.name}</span>
+                </div>
+                <p className="text-[11px] text-slate-300 leading-snug">
+                  {alert.activity.reason}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between gap-2 pt-1">
+                <span className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
+                  <Clock className="h-3 w-3" /> {alert.time}
+                </span>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleQuickReview(alert.id, "false_alarm")}
+                    className="px-3 py-1.5 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-700/80 text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    <CheckCircle className="h-3.5 w-3.5" />
+                    False Alarm
+                  </button>
+                  <button
+                    onClick={() => handleQuickReview(alert.id, "valid")}
+                    className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-600/30 transition-all cursor-pointer flex items-center gap-1"
+                  >
+                    <AlertOctagon className="h-3.5 w-3.5" />
+                    Valid
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       {/* Top Banner (Adopted from Friend UI) */}
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 text-white border border-slate-800 shadow-md relative overflow-hidden">
         <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -350,7 +465,7 @@ export const TeacherDashboard = () => {
               <tr className="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
                 <th className="pb-3 font-semibold">Student</th>
                 <th className="pb-3 font-semibold">Exam</th>
-                <th className="pb-3 font-semibold">Incident Type</th>
+                <th className="pb-3 font-semibold">Observed Activity & Reason</th>
                 <th className="pb-3 font-semibold">Time</th>
                 <th className="pb-3 font-semibold">Evidence Frame</th>
                 <th className="pb-3 font-semibold">Verdict</th>
@@ -359,71 +474,86 @@ export const TeacherDashboard = () => {
             </thead>
             <tbody className="divide-y divide-slate-800/60">
               {recentEvents.length > 0 ? (
-                recentEvents.map((ev) => (
-                  <tr key={ev._id} className="hover:bg-slate-800/30 transition-colors">
-                    <td className="py-3 font-medium text-slate-200">
-                      {ev.studentId?.name || "Student"}
-                      <span className="block text-[10px] text-slate-500 font-mono">
-                        {ev.studentId?.studentId || ""}
-                      </span>
-                    </td>
-                    <td className="py-3 text-slate-300">
-                      {ev.examId?.title?.slice(0, 26)}...
-                    </td>
-                    <td className="py-3 font-mono text-indigo-300">
-                      {ev.type}
-                    </td>
-                    <td className="py-3 text-slate-400 font-mono text-[11px]">
-                      {new Date(ev.occurredAt).toLocaleTimeString()}
-                    </td>
-                    <td className="py-3">
-                      {ev.evidenceUrl ? (
-                        <div
-                          onClick={() => setSelectedEvent(ev)}
-                          className="h-9 w-14 rounded-md overflow-hidden border border-slate-700 bg-slate-950 cursor-pointer hover:border-indigo-500 transition-colors relative group"
-                        >
-                          <img
-                            src={getEvidenceUrl(ev.evidenceUrl)}
-                            alt="thumb"
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              if (!e.target.dataset.fallback) {
-                                e.target.dataset.fallback = "true";
-                                e.target.src = ev.evidenceUrl;
-                              }
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Eye className="h-3 w-3 text-white" />
-                          </div>
+                recentEvents.map((ev) => {
+                  const act = getActivityDetails(ev.type);
+                  return (
+                    <tr key={ev._id} className="hover:bg-slate-800/30 transition-colors">
+                      <td className="py-3 font-medium text-slate-200">
+                        {ev.studentId?.name || "Student"}
+                        <span className="block text-[10px] text-slate-500 font-mono">
+                          {ev.studentId?.studentId || ""}
+                        </span>
+                      </td>
+                      <td className="py-3 text-slate-300">
+                        {ev.examId?.title?.slice(0, 26)}...
+                      </td>
+                      <td className="py-3">
+                        <div className="flex items-center gap-1.5 font-semibold text-slate-200">
+                          <span>{act.icon}</span>
+                          <span className="text-indigo-300 text-xs">{act.shortName}</span>
                         </div>
-                      ) : (
-                        <span className="text-[11px] text-slate-600">No frame</span>
-                      )}
-                    </td>
-                    <td className="py-3">
-                      <span
-                        className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
-                          ev.reviewDecision === "valid"
-                            ? "bg-rose-950/70 text-rose-300 border border-rose-800"
-                            : ev.reviewDecision === "false_alarm"
-                            ? "bg-emerald-950/70 text-emerald-300 border border-emerald-800"
-                            : "bg-amber-950/70 text-amber-300 border border-amber-800"
-                        }`}
-                      >
-                        {ev.reviewDecision || "pending"}
-                      </span>
-                    </td>
-                    <td className="py-3 text-right">
-                      <button
-                        onClick={() => setSelectedEvent(ev)}
-                        className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs transition-colors cursor-pointer border border-slate-700"
-                      >
-                        Review
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                        <span className="block text-[10px] text-slate-400 line-clamp-1 max-w-[240px]">
+                          {act.reason}
+                        </span>
+                      </td>
+                      <td className="py-3 text-slate-400 font-mono text-[11px]">
+                        {new Date(ev.occurredAt).toLocaleTimeString()}
+                      </td>
+                      <td className="py-3">
+                        {ev.evidenceUrl ? (
+                          <div
+                            onClick={() => setSelectedEvent(ev)}
+                            className="h-9 w-14 rounded-md overflow-hidden border border-slate-700 bg-slate-950 cursor-pointer hover:border-indigo-500 transition-colors relative group"
+                          >
+                            <img
+                              src={getEvidenceUrl(ev.evidenceUrl)}
+                              alt="thumb"
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                if (!e.target.dataset.fallback) {
+                                  e.target.dataset.fallback = "true";
+                                  e.target.src = ev.evidenceUrl;
+                                }
+                              }}
+                            />
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Eye className="h-3 w-3 text-white" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div
+                            onClick={() => setSelectedEvent(ev)}
+                            className="h-9 w-14 rounded-md border border-slate-800 bg-slate-950 flex flex-col items-center justify-center text-[10px] cursor-pointer hover:border-indigo-500"
+                          >
+                            <span>{act.icon}</span>
+                            <span className="text-[8px] text-slate-500 font-mono">Log</span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3">
+                        <span
+                          className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
+                            ev.reviewDecision === "valid"
+                              ? "bg-rose-950/70 text-rose-300 border border-rose-800"
+                              : ev.reviewDecision === "false_alarm"
+                              ? "bg-emerald-950/70 text-emerald-300 border border-emerald-800"
+                              : "bg-amber-950/70 text-amber-300 border border-amber-800"
+                          }`}
+                        >
+                          {ev.reviewDecision || "pending"}
+                        </span>
+                      </td>
+                      <td className="py-3 text-right">
+                        <button
+                          onClick={() => setSelectedEvent(ev)}
+                          className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs transition-colors cursor-pointer border border-slate-700"
+                        >
+                          Review
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td colSpan={7} className="py-6 text-center text-slate-500">
