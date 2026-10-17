@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import api from "../../services/api.js";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchTeacherDashboard, addRecentEvent } from "../../store/slices/teacherSlice.js";
+import { submitReview, addLiveAlert, removeLiveAlert } from "../../store/slices/reviewSlice.js";
 import { getSocket } from "../../services/socket.js";
 import { RiskBadge } from "../../components/RiskBadge.jsx";
 import { SnapshotModal } from "../../components/SnapshotModal.jsx";
@@ -38,10 +40,12 @@ import {
 const CHART_COLORS = ["#6366f1", "#14b8a6", "#f59e0b", "#ec4899", "#8b5cf6"];
 
 export const TeacherDashboard = () => {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { stats, eventDistribution, liveSessions, recentEvents, loading } = useSelector(
+    (state) => state.teacher
+  );
+  const { liveAlerts } = useSelector((state) => state.reviews);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [liveAlerts, setLiveAlerts] = useState([]);
 
   // Audio chime for teacher when student triggers suspicious activity
   const playChime = () => {
@@ -61,41 +65,28 @@ export const TeacherDashboard = () => {
     } catch (e) {}
   };
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get("/teacher/dashboard");
-      setData(res.data.data);
-    } catch (err) {
-      console.error("Dashboard fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleQuickReview = async (eventId, decision) => {
     try {
-      await api.post(`/events/${eventId}/reviews`, { decision });
-      setLiveAlerts((prev) => prev.filter((a) => a.id !== eventId));
-      fetchDashboardData();
+      await dispatch(submitReview({ eventId, decision })).unwrap();
+      dispatch(fetchTeacherDashboard({ silent: true }));
     } catch (err) {
-      alert("Review action failed: " + (err.response?.data?.message || err.message));
+      alert("Review action failed: " + err);
     }
   };
 
   useEffect(() => {
-    fetchDashboardData();
+    dispatch(fetchTeacherDashboard());
 
     // Socket.IO live notifications
     const socket = getSocket();
     socket.emit("join:teacher");
 
-    socket.on("attempt:started", (payload) => {
-      fetchDashboardData();
+    socket.on("attempt:started", () => {
+      dispatch(fetchTeacherDashboard({ silent: true }));
     });
 
-    socket.on("attempt:submitted", (payload) => {
-      fetchDashboardData();
+    socket.on("attempt:submitted", () => {
+      dispatch(fetchTeacherDashboard({ silent: true }));
     });
 
     socket.on("event:flagged", (payload) => {
@@ -114,12 +105,13 @@ export const TeacherDashboard = () => {
         time: new Date().toLocaleTimeString(),
       };
 
-      setLiveAlerts((prev) => [alertToast, ...prev.slice(0, 4)]);
-      fetchDashboardData();
+      dispatch(addLiveAlert(alertToast));
+      dispatch(addRecentEvent(flaggedEvent));
+      dispatch(fetchTeacherDashboard({ silent: true }));
     });
 
     socket.on("event:reviewed", () => {
-      fetchDashboardData();
+      dispatch(fetchTeacherDashboard({ silent: true }));
     });
 
     return () => {
@@ -128,9 +120,9 @@ export const TeacherDashboard = () => {
       socket.off("event:flagged");
       socket.off("event:reviewed");
     };
-  }, []);
+  }, [dispatch]);
 
-  if (loading && !data) {
+  if (loading && !stats) {
     return (
       <div className="flex-1 flex items-center justify-center p-12 text-slate-400 gap-3">
         <RefreshCw className="h-5 w-5 animate-spin text-indigo-400" />
@@ -138,9 +130,6 @@ export const TeacherDashboard = () => {
       </div>
     );
   }
-
-  const { stats, eventDistribution = [], liveSessions = [], recentEvents = [] } =
-    data || {};
 
   return (
     <div className="space-y-6 relative">
@@ -168,9 +157,7 @@ export const TeacherDashboard = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() =>
-                    setLiveAlerts((prev) => prev.filter((a) => a.id !== alert.id))
-                  }
+                  onClick={() => dispatch(removeLiveAlert(alert.id))}
                   className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
                 >
                   <X className="h-4 w-4" />

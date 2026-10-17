@@ -1,75 +1,35 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import api from "../services/api.js";
+import React, { createContext, useContext, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  verifySession,
+  loginUser,
+  registerUser,
+  logoutUser,
+} from "../store/slices/authSlice.js";
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem("proctor_user");
-    return saved ? JSON.parse(saved) : null;
-  });
-  const [token, setToken] = useState(() => localStorage.getItem("proctor_token") || null);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { user, token, loading } = useSelector((state) => state.auth);
 
-  // Check current auth session on initial load
+  // Check current auth session on initial load via Redux
   useEffect(() => {
-    const verifySession = async () => {
-      const storedToken = localStorage.getItem("proctor_token");
-      if (!storedToken) {
-        setLoading(false);
-        return;
-      }
-      try {
-        const { data } = await api.get("/auth/me");
-        if (data?.data?.user) {
-          setUser(data.data.user);
-          localStorage.setItem("proctor_user", JSON.stringify(data.data.user));
-        }
-      } catch (err) {
-        console.warn("Session expired or invalid, logging out.");
-        logout();
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    verifySession();
-  }, []);
+    dispatch(verifySession());
+  }, [dispatch]);
 
   const login = async (email, password) => {
-    const { data } = await api.post("/auth/login", { email, password });
-    const { user: loggedInUser, token: authToken } = data.data;
-
-    setUser(loggedInUser);
-    setToken(authToken);
-    localStorage.setItem("proctor_user", JSON.stringify(loggedInUser));
-    localStorage.setItem("proctor_token", authToken);
-
-    return loggedInUser;
+    const result = await dispatch(loginUser({ email, password })).unwrap();
+    return result.user;
   };
 
   const register = async (userData) => {
-    const { data } = await api.post("/auth/register", userData);
-    const { user: registeredUser, token: authToken } = data.data;
-
-    setUser(registeredUser);
-    setToken(authToken);
-    localStorage.setItem("proctor_user", JSON.stringify(registeredUser));
-    localStorage.setItem("proctor_token", authToken);
-
-    return registeredUser;
+    const result = await dispatch(registerUser(userData)).unwrap();
+    return result.user;
   };
 
   const logout = async () => {
-    try {
-      await api.post("/auth/logout");
-    } catch (err) {
-      // Ignore network errors on logout
-    }
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem("proctor_user");
-    localStorage.removeItem("proctor_token");
+    await dispatch(logoutUser());
   };
 
   const isTeacher = user?.role === "teacher" || user?.role === "admin";

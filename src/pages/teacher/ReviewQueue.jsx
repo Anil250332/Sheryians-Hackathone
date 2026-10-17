@@ -1,5 +1,15 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import api from "../../services/api.js";
+import React, { useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchReviews,
+  submitReview,
+  setFilter,
+  setSelectedEvent,
+  eventFlagged,
+  eventReviewed,
+  addLiveAlert,
+  removeLiveAlert,
+} from "../../store/slices/reviewSlice.js";
 import { getSocket } from "../../services/socket.js";
 import { SnapshotModal } from "../../components/SnapshotModal.jsx";
 import { getEvidenceUrl } from "../../utils/imageUrl.js";
@@ -13,27 +23,24 @@ import {
   RefreshCw,
   Video,
   Clock,
-  Bell,
   X,
-  Volume2,
 } from "lucide-react";
 
 export const ReviewQueue = () => {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all"); // 'all', 'pending', 'valid', 'false_alarm'
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [liveAlerts, setLiveAlerts] = useState([]); // Real-time floating alert toasts for teacher
+  const dispatch = useDispatch();
+  const { events, loading, filter, selectedEvent, liveAlerts } = useSelector(
+    (state) => state.reviews
+  );
 
-  // Play a gentle alert sound when student triggers an activity
+  // Play an alert sound when student triggers an activity
   const playNotificationSound = useCallback(() => {
     try {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = "sine";
-      osc.frequency.setValueAtTime(659.25, audioCtx.currentTime); // E5
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.12); // A5
+      osc.frequency.setValueAtTime(659.25, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.12);
       gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
       osc.connect(gain);
@@ -41,26 +48,16 @@ export const ReviewQueue = () => {
       osc.start();
       osc.stop(audioCtx.currentTime + 0.45);
     } catch (e) {
-      // Audio autoplay policy fallback
+      // Audio fallback
     }
   }, []);
 
-  const fetchReviews = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get(`/teacher/reviews?status=${filter}`);
-      setEvents(res.data.data || []);
-    } catch (err) {
-      console.error("Failed to load review events:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Fetch reviews whenever filter changes
   useEffect(() => {
-    fetchReviews();
-  }, [filter]);
+    dispatch(fetchReviews(filter));
+  }, [dispatch, filter]);
 
+  // Real-time socket integration with Redux: smooth in-place updates, NO page reload!
   useEffect(() => {
     const socket = getSocket();
     socket.emit("join:teacher");
@@ -72,6 +69,10 @@ export const ReviewQueue = () => {
       const flaggedEvent = payload.event || {};
       const act = getActivityDetails(flaggedEvent.type);
 
+      // 1. Smoothly update Redux state in-place (no loading spinner, no page reload!)
+      dispatch(eventFlagged(flaggedEvent));
+
+      // 2. Add floating live alert toast
       const alertToast = {
         id: flaggedEvent._id || Date.now().toString(),
         studentName: flaggedEvent.studentId?.name || "Student",
@@ -80,16 +81,14 @@ export const ReviewQueue = () => {
         activity: act,
         type: flaggedEvent.type,
         time: new Date().toLocaleTimeString(),
-        rawEvent: flaggedEvent,
       };
-
-      setLiveAlerts((prev) => [alertToast, ...prev.slice(0, 4)]);
-      fetchReviews();
+      dispatch(addLiveAlert(alertToast));
     };
 
     const handleEventReviewed = (payload) => {
       console.log("Teacher Live Socket: event reviewed", payload);
-      fetchReviews();
+      // Update in-place in Redux (no loading spinner, no page reload!)
+      dispatch(eventReviewed(payload));
     };
 
     socket.on("event:flagged", handleEventFlagged);
@@ -99,24 +98,13 @@ export const ReviewQueue = () => {
       socket.off("event:flagged", handleEventFlagged);
       socket.off("event:reviewed", handleEventReviewed);
     };
-  }, [filter, playNotificationSound]);
+  }, [dispatch, playNotificationSound]);
 
   const handleQuickReview = async (eventId, decision) => {
     try {
-      await api.post(`/events/${eventId}/reviews`, { decision });
-      // Optimistic local update
-      setEvents((prev) =>
-        prev.map((ev) =>
-          ev._id === eventId
-            ? { ...ev, isReviewed: true, reviewDecision: decision }
-            : ev
-        )
-      );
-
-      // Dismiss live alert if present
-      setLiveAlerts((prev) => prev.filter((a) => a.id !== eventId));
+      await dispatch(submitReview({ eventId, decision })).unwrap();
     } catch (err) {
-      alert("Review action failed: " + (err.response?.data?.message || err.message));
+      alert("Review action failed: " + err);
     }
   };
 
@@ -146,9 +134,7 @@ export const ReviewQueue = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() =>
-                    setLiveAlerts((prev) => prev.filter((a) => a.id !== alert.id))
-                  }
+                  onClick={() => dispatch(removeLiveAlert(alert.id))}
                   className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
                 >
                   <X className="h-4 w-4" />
@@ -205,7 +191,7 @@ export const ReviewQueue = () => {
         </div>
 
         <button
-          onClick={fetchReviews}
+          onClick={() => dispatch(fetchReviews(filter))}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white text-xs font-medium transition-colors cursor-pointer self-start sm:self-auto"
         >
           <RefreshCw className="h-3.5 w-3.5" />
@@ -224,7 +210,7 @@ export const ReviewQueue = () => {
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setFilter(tab.id)}
+            onClick={() => dispatch(setFilter(tab.id))}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all cursor-pointer ${
               filter === tab.id
                 ? "bg-indigo-600 text-white shadow-sm"
@@ -254,7 +240,7 @@ export const ReviewQueue = () => {
               >
                 {/* Snapshot Frame */}
                 <div
-                  onClick={() => setSelectedEvent(ev)}
+                  onClick={() => dispatch(setSelectedEvent(ev))}
                   className="relative aspect-video bg-slate-950 border-b border-slate-800 cursor-pointer overflow-hidden flex items-center justify-center"
                 >
                   {ev.evidenceUrl ? (
@@ -414,13 +400,9 @@ export const ReviewQueue = () => {
       {selectedEvent && (
         <SnapshotModal
           event={selectedEvent}
-          onClose={() => setSelectedEvent(null)}
+          onClose={() => dispatch(setSelectedEvent(null))}
           onReviewed={(id, decision) => {
-            setEvents((prev) =>
-              prev.map((e) =>
-                e._id === id ? { ...e, isReviewed: true, reviewDecision: decision } : e
-              )
-            );
+            dispatch(eventReviewed({ eventId: id, decision }));
           }}
         />
       )}
